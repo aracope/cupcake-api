@@ -33,7 +33,7 @@ def get_cupcake(id):
     cupcake = Cupcake.query.get(id)
     
     if cupcake:
-        return jsonify({
+        return jsonify(cupcake={
             'id': cupcake.id,
             'flavor': cupcake.flavor,
             'size': cupcake.size,
@@ -61,7 +61,7 @@ def create_cupcake():
     db.session.add(new_cupcake)
     db.session.commit()
 
-    return jsonify({
+    return jsonify(cupcake={
         'id': new_cupcake.id,
         'flavor': new_cupcake.flavor,
         'size': new_cupcake.size,
