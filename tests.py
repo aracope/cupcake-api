@@ -83,6 +83,11 @@ class CupcakeViewsTestCase(TestCase):
                     "image": "http://test.com/cupcake.jpg"
                 }
             })
+    def test_get_cupcake_not_found(self):
+        with app.test_client() as client:
+            resp = client.get("/api/cupcakes/9999")
+            self.assertEqual(resp.status_code, 404)
+
 
     def test_create_cupcake(self):
         with app.test_client() as client:
@@ -151,4 +156,13 @@ class CupcakeViewsTestCase(TestCase):
             self.assertEqual(data, {"message": "Deleted"})
 
             self.assertIsNone(Cupcake.query.get(self.cupcake_id))
+
+    def test_search_cupcakes(self):
+        with app.test_client() as client:
+            resp = client.get("/api/cupcakes?search=TestFlavor")
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertEqual(len(data["cupcakes"]), 1)
+            self.assertEqual(data["cupcakes"][0]["flavor"], "TestFlavor")
+
 

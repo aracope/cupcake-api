@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cupcake List</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <form id="search-form">
+    <input type="text" id="search-input" placeholder="Search cupcakes">
+    <button type="submit">Search</button>
+  </form>
+  
+  <h1>Cupcake List</h1>
+  <ul id="cupcake-list"></ul>
+
+  <h2>Add a Cupcake</h2>
+  <form id="cupcake-form">
+    <input type="text" name="flavor" placeholder="Flavor" required>
+    <input type="text" name="size" placeholder="Size" required>
+    <input type="number" name="rating" placeholder="Rating" required>
+    <input type="url" name="image" placeholder="Image URL">
+    <button type="submit">Add Cupcake</button>
+  </form>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
+

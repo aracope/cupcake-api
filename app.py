@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from models import db, Cupcake
 
 app = Flask(__name__)
@@ -11,6 +11,10 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+@app.route("/")
+def homepage():
+    return render_template("index.html")
 
 # Route to get all cupcakes
 @app.route('/api/cupcakes', methods=['GET'])
@@ -102,7 +106,18 @@ def delete_cupcake(id):
 
     return jsonify(message="Deleted")
 
+@app.route("/api/cupcakes")
+def list_cupcakes():
+    search = request.args.get('search')
 
+    if search:
+        cupcakes = Cupcake.query.filter(
+            Cupcake.flavor.ilike(f"%{search}%")
+        ).all()
+    else:
+        cupcakes = Cupcake.query.all()
+
+    return jsonify(cupcakes=[c.serialize() for c in cupcakes])
 
 if __name__ == '__main__':
     app.run(debug=True)
