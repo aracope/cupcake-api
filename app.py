@@ -2,7 +2,9 @@ from flask import Flask, request, jsonify
 from models import db, Cupcake
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///cupcakes'
+import os
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///cupcakes')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -68,6 +70,39 @@ def create_cupcake():
         'rating': new_cupcake.rating,
         'image': new_cupcake.image
     }), 201
+
+# Route to update a cupcake
+@app.route('/api/cupcakes/<int:id>', methods=['PATCH'])
+def update_cupcake(id):
+    cupcake = Cupcake.query.get_or_404(id)
+    data = request.get_json()
+
+    cupcake.flavor = data['flavor']
+    cupcake.size = data['size']
+    cupcake.rating = data['rating']
+    cupcake.image = data['image']
+
+    db.session.commit()
+
+    return jsonify(cupcake={
+        'id': cupcake.id,
+        'flavor': cupcake.flavor,
+        'size': cupcake.size,
+        'rating': cupcake.rating,
+        'image': cupcake.image
+    })
+
+# Route to delete a cupcake
+@app.route('/api/cupcakes/<int:id>', methods=['DELETE'])
+def delete_cupcake(id):
+    cupcake = Cupcake.query.get_or_404(id)
+
+    db.session.delete(cupcake)
+    db.session.commit()
+
+    return jsonify(message="Deleted")
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

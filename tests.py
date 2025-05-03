@@ -1,3 +1,6 @@
+import os
+os.environ['DATABASE_URL'] = "postgresql:///cupcakes_test"
+
 from unittest import TestCase
 
 from app import app
@@ -36,7 +39,8 @@ class CupcakeViewsTestCase(TestCase):
     def setUp(self):
         """Make demo data."""
         with app.app_context():
-            Cupcake.query.delete()
+            db.drop_all()
+            db.create_all()
 
             cupcake = Cupcake(**CUPCAKE_DATA)
             db.session.add(cupcake)
@@ -48,6 +52,7 @@ class CupcakeViewsTestCase(TestCase):
         """Clean up fouled transactions."""
         with app.app_context():
             db.session.rollback()
+            db.drop_all()
 
     def test_list_cupcakes(self):
         """Test listing all cupcakes"""
@@ -102,3 +107,48 @@ class CupcakeViewsTestCase(TestCase):
             })
 
             self.assertEqual(Cupcake.query.count(), 2)
+
+    def test_update_cupcake(self):
+        with app.test_client() as client:
+            data = {
+                "flavor": "UpdatedFlavor",
+                "size": "UpdatedSize",
+                "rating": 9,
+                "image": "http://test.com/updated.jpg"
+            }
+
+            resp = client.patch(f"/api/cupcakes/{self.cupcake_id}", json=data)
+            self.assertEqual(resp.status_code, 200)
+
+            json = resp.get_json()
+            self.assertEqual(json['cupcake']['flavor'], "UpdatedFlavor")
+            self.assertEqual(json['cupcake']['size'], "UpdatedSize")
+            self.assertEqual(json['cupcake']['rating'], 9)
+            self.assertEqual(json['cupcake']['image'], "http://test.com/updated.jpg")
+
+    def test_update_cupcake_not_found(self):
+        with app.test_client() as client:
+            resp = client.patch("/api/cupcakes/9999", json={
+                "flavor": "Nothing",
+                "size": "None",
+                "rating": 0,
+                "image": "http://test.com/nothing.jpg"
+            })
+
+            self.assertEqual(resp.status_code, 404)
+
+    def test_delete_cupcake_not_found(self):
+        with app.test_client() as client:
+            resp = client.delete("/api/cupcakes/9999")
+            self.assertEqual(resp.status_code, 404)
+
+    def test_delete_cupcake(self):
+        with app.test_client() as client:
+            resp = client.delete(f"/api/cupcakes/{self.cupcake_id}")
+            self.assertEqual(resp.status_code, 200)
+
+            data = resp.get_json()
+            self.assertEqual(data, {"message": "Deleted"})
+
+            self.assertIsNone(Cupcake.query.get(self.cupcake_id))
+
